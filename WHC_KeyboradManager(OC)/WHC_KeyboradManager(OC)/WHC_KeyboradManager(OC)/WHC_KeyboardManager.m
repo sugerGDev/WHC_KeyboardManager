@@ -83,7 +83,7 @@ const static CGFloat kNotInitValue = -888888.88;
 
 @interface WHC_KeyboardManager ()
 /// 监视控制器和配置集合
-@property (nonatomic, strong) NSMutableDictionary<NSString *,WHC_KBMConfiguration *> * KeyboardConfigurations;
+@property (nonatomic, strong) NSMutableDictionary<NSNumber *,WHC_KBMConfiguration *> * KeyboardConfigurations;
 /// 当前的输入视图(UITextView/UITextField)
 @property (nonatomic, strong) UIView * currentField;
 /// 上一个输入视图
@@ -125,7 +125,7 @@ const static CGFloat kNotInitValue = -888888.88;
     if (self) {
         _initMoveViewY = kNotInitValue;
         _KeyboardConfigurations = [NSMutableDictionary dictionary];
-        _monitorViewControllers = [NSMutableArray array];
+//        _monitorViewControllers = [NSMutableArray array];
         _moveViewAnimationDuration = 0.5;
         _moveDidAnimation = YES;
         [self addKeyboardMonitor];
@@ -144,7 +144,7 @@ const static CGFloat kNotInitValue = -888888.88;
     NSNotificationCenter * nCenter = [NSNotificationCenter defaultCenter];
     
     [nCenter addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-    [nCenter addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+//    [nCenter addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     
     [nCenter addObserver:self selector:@selector(myTextFieldDidBeginEditing:) name:UITextFieldTextDidBeginEditingNotification object:nil];
     [nCenter addObserver:self selector:@selector(myTextFieldDidEndEditing:) name:UITextFieldTextDidEndEditingNotification object:nil];
@@ -269,7 +269,7 @@ const static CGFloat kNotInitValue = -888888.88;
 
 /// 自动移除键盘头
 - (void)autoRemoveHeader {
-    [_KeyboardConfigurations enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, WHC_KBMConfiguration * _Nonnull obj, BOOL * _Nonnull stop) {
+    [_KeyboardConfigurations enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, WHC_KBMConfiguration * _Nonnull obj, BOOL * _Nonnull stop) {
         if (obj.headerView) {
             [obj.headerView removeFromSuperview];
         }
@@ -282,7 +282,7 @@ const static CGFloat kNotInitValue = -888888.88;
     WHC_KBMConfiguration * config = nil;
     UIViewController * currentVC = [self whc_CurrentViewController];
     if (currentVC) {
-        WHC_KBMConfiguration * tmpConfig = _KeyboardConfigurations[currentVC.description];
+        WHC_KBMConfiguration * tmpConfig = _KeyboardConfigurations[@(currentVC.hash)];
         if (tmpConfig) {
             config = tmpConfig;
         }
@@ -346,6 +346,10 @@ const static CGFloat kNotInitValue = -888888.88;
 
 /// 处理键盘出现时自动调整当前UI(输入视图不被遮挡)
 - (void)handleKeyboardDidShowToAdjust {
+    if (!_moveDidAnimation) {
+        return;
+    }
+    
     WHC_KBMConfiguration * _KeyboardConfiguration = [self getCurrentConfig];
     UIView * headerView = nil;
     if (_KeyboardConfiguration) {
@@ -420,10 +424,10 @@ const static CGFloat kNotInitValue = -888888.88;
 }
 
 - (void)setCurrentMonitorViewController {
-    if (_monitorViewControllers.count > 0) {
+    if (_KeyboardConfigurations.count > 0) {
         UIViewController * topViewController = [self whc_CurrentViewController];
         _currentMonitorViewController = nil;
-        if (topViewController != nil && [_monitorViewControllers containsObject:topViewController.description]) {
+        if (topViewController != nil && [_KeyboardConfigurations objectForKey:@(topViewController.hash)]) {
             _currentMonitorViewController = topViewController;
         }
     }
@@ -432,10 +436,10 @@ const static CGFloat kNotInitValue = -888888.88;
 #pragma mark - 公开Api -
 - (WHC_KBMConfiguration *)addMonitorViewController:(UIViewController *)vc {
     WHC_KBMConfiguration * configuration = [WHC_KBMConfiguration new];
-    _KeyboardConfigurations[vc.description] = configuration;
-    if (![_monitorViewControllers containsObject:vc.description]) {
-        [_monitorViewControllers addObject:vc.description];
-    }
+    _KeyboardConfigurations[@(vc.hash)] = configuration;
+//    if (![_monitorViewControllers containsObject:vc.description]) {
+//        [_monitorViewControllers addObject:vc.description];
+//    }
     if (_didRemoveKBObserve) {
         [self addKeyboardMonitor];
         _didRemoveKBObserve = NO;
@@ -445,16 +449,16 @@ const static CGFloat kNotInitValue = -888888.88;
 
 - (void)removeMonitorViewController:(UIViewController *)vc {
     if (vc != nil) {
-        [_KeyboardConfigurations removeObjectForKey:vc.description];
-        if ([_monitorViewControllers containsObject:vc.description]) {
-            [_monitorViewControllers removeObject:vc.description];
+        [_KeyboardConfigurations removeObjectForKey:@(vc.hash)];
+        if ([_monitorViewControllers containsObject:@(vc.hash)]) {
+            [_monitorViewControllers removeObject:@(vc.hash)];
         }
     }
 }
 
 - (void)removeKeyboardObserver {
     [_KeyboardConfigurations removeAllObjects];
-    [_monitorViewControllers removeAllObjects];
+//    [_monitorViewControllers removeAllObjects];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     _didRemoveKBObserve = YES;
 }
@@ -473,6 +477,10 @@ const static CGFloat kNotInitValue = -888888.88;
 #pragma mark - 键盘监听处理 -
 
 - (void)keyboardWillShow:(NSNotification *)notify {
+    
+     UIView * fieldView = notify.object;
+  
+    
     if (_currentField == nil) {
         [self setCurrentMonitorViewController];
     }
@@ -480,11 +488,15 @@ const static CGFloat kNotInitValue = -888888.88;
     NSDictionary * userInfo = notify.userInfo;
     _keyboardFrame = ((NSValue *)userInfo[UIKeyboardFrameEndUserInfoKey]).CGRectValue;
     _keyboardDuration = ((NSNumber *)userInfo[UIKeyboardAnimationDurationUserInfoKey]).doubleValue;
-    [self updateHeaderViewWithComplete:nil];
-    [self handleKeyboardDidShowToAdjust];
+  
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(_keyboardDuration * .6f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+          [self updateHeaderViewWithComplete:nil];
+          [self handleKeyboardDidShowToAdjust];
+    });
 }
 
 - (void)keyboardWillHide:(NSNotification *)notify {
+  
     _keyboardFrame.size.width = 0;
     _keyboardDuration = 0;
     [self updateHeaderViewWithComplete:nil];
@@ -561,7 +573,7 @@ const static CGFloat kNotInitValue = -888888.88;
         _currentField = notify.object;
         [self scanFrontNextField];
         [self sendFieldViewNotify];
-        [self handleKeyboardDidShowToAdjust];
+//        [self handleKeyboardDidShowToAdjust];
     }
 }
 
