@@ -60,15 +60,12 @@ extern const NSString * WHC_KBM_FrontFieldView;
 
 /**
  动画完成block
- 
- @param 完成block
+ 完成block
  */
 - (void)keyoboardAnimationCompletionBlock:(dispatch_block_t)block;
 /**
  动画开始block
-
- @return 开始block
- */
+开始block */
 - (void)keyoboardAnimationBeginingBlock:(void (^)(BOOL keyboardHidden))block;
 
 @end

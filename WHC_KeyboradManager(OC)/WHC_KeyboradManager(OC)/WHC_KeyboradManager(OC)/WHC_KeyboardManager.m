@@ -485,8 +485,9 @@ const static CGFloat kNotInitValue = -888888.88;
 - (void)removeMonitorViewController:(UIViewController *)vc {
     if (vc != nil) {
         [_KeyboardConfigurations removeObjectForKey:@(vc.hash)];
-        if ([_monitorViewControllers containsObject:@(vc.hash)]) {
-            [_monitorViewControllers removeObject:@(vc.hash)];
+        NSString *str = [NSString stringWithFormat:@"%zd",vc.hash];
+        if ([_monitorViewControllers containsObject:str]) {
+            [_monitorViewControllers removeObject:str];
         }
     }
 }
@@ -515,7 +516,7 @@ const static CGFloat kNotInitValue = -888888.88;
     
     
     
-     UIView * fieldView = notify.object;
+//     UIView * fieldView = notify.object;
   
     if (_currentField == nil) {
         [self setCurrentMonitorViewController];
