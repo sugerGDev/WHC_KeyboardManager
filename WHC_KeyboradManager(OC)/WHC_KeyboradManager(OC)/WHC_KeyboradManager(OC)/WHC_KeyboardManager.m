@@ -30,6 +30,7 @@
 #import "NSObject+WHC_Extension.h"
 #import <objc/runtime.h>
 
+
 /// 获取下一个编辑框视图的通知
 const NSString * WHC_KBM_NextFieldView = @"GetNextFieldViewNotification";
 /// 获取当前编辑框视图的通知
@@ -47,9 +48,22 @@ const static NSString * WHCObserve = @"kWHCObserve";
 @property (nonatomic, copy) CGFloat (^offsetBlock)(UIView * field);
 /// 获取移动视图回调
 @property (nonatomic, copy) UIView* (^offsetViewBlock)(UIView * field);
+/// 动画完成block回调
+@property(nonatomic, copy) dispatch_block_t keyboardAnimationCompletionBlock;
+// 动画开始block 回调
+@property(nonatomic, copy) void (^keyboardAnimationBeginingBlock)(BOOL keyboardHidden);
 @end
 
 @implementation WHC_KBMConfiguration
+
+- (void)dealloc {
+    self.offsetBlock = nil;
+    self.offsetViewBlock = nil;
+    self.keyboardAnimationCompletionBlock = nil;
+    self.keyboardAnimationBeginingBlock = nil;
+    
+//    NSLog(@">>>>> %s  dealloc ",__func__);
+}
 
 - (instancetype)init {
     self = [super init];
@@ -74,6 +88,14 @@ const static NSString * WHCObserve = @"kWHCObserve";
 
 - (void)setOffsetView:(UIView * (^)(UIView * field))block {
     self.offsetViewBlock = block;
+}
+
+- (void)keyoboardAnimationCompletionBlock:(dispatch_block_t)block {
+    self.keyboardAnimationCompletionBlock = block;
+}
+
+- (void)keyoboardAnimationBeginingBlock:(void (^)(BOOL keyboardHidden))block {
+    self.keyboardAnimationBeginingBlock = block;
 }
 
 @end
@@ -144,7 +166,7 @@ const static CGFloat kNotInitValue = -888888.88;
     NSNotificationCenter * nCenter = [NSNotificationCenter defaultCenter];
     
     [nCenter addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-//    [nCenter addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+    [nCenter addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     
     [nCenter addObserver:self selector:@selector(myTextFieldDidBeginEditing:) name:UITextFieldTextDidBeginEditingNotification object:nil];
     [nCenter addObserver:self selector:@selector(myTextFieldDidEndEditing:) name:UITextFieldTextDidEndEditingNotification object:nil];
@@ -411,13 +433,26 @@ const static CGFloat kNotInitValue = -888888.88;
             CGRect moveViewFrame = moveView.frame;
             moveViewFrame.origin.y = sumOffsetY;
             _moveDidAnimation = NO;
+            
             [UIView animateWithDuration:_moveViewAnimationDuration animations:^{
                 moveView.frame = moveViewFrame;
+                
             } completion:^(BOOL finished) {
                 if (finished && moveView.frame.origin.y != moveViewFrame.origin.y) {
                     moveView.frame = moveViewFrame;
+                    [moveView.superview layoutIfNeeded];
                 }
-                _moveDidAnimation = YES;
+                
+                //TODO:动画完成block
+                WHC_KBMConfiguration *config =  [_KeyboardConfigurations objectForKey:@(_currentMonitorViewController.hash)];
+                if (config.keyboardAnimationCompletionBlock) {
+                    config.keyboardAnimationCompletionBlock();
+                }
+                
+                //TODO: 动画完成动画延迟，防止发生抖动
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.7 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                      self->_moveDidAnimation = YES;
+                });
             }];
         }
     }
@@ -478,13 +513,23 @@ const static CGFloat kNotInitValue = -888888.88;
 
 - (void)keyboardWillShow:(NSNotification *)notify {
     
+    
+    
      UIView * fieldView = notify.object;
   
-    
     if (_currentField == nil) {
         [self setCurrentMonitorViewController];
     }
     if (_currentMonitorViewController == nil) return;
+    
+    
+    //TODO :动画开始block
+    WHC_KBMConfiguration *config =  [_KeyboardConfigurations objectForKey:@(_currentMonitorViewController.hash)];
+    if (config.keyboardAnimationBeginingBlock) {
+        config.keyboardAnimationBeginingBlock(NO);
+    }
+    
+    
     NSDictionary * userInfo = notify.userInfo;
     _keyboardFrame = ((NSValue *)userInfo[UIKeyboardFrameEndUserInfoKey]).CGRectValue;
     _keyboardDuration = ((NSNumber *)userInfo[UIKeyboardAnimationDurationUserInfoKey]).doubleValue;
@@ -497,6 +542,12 @@ const static CGFloat kNotInitValue = -888888.88;
 
 - (void)keyboardWillHide:(NSNotification *)notify {
   
+    //TODO :动画开始block
+    WHC_KBMConfiguration *config =  [_KeyboardConfigurations objectForKey:@(_currentMonitorViewController.hash)];
+    if (config.keyboardAnimationBeginingBlock) {
+        config.keyboardAnimationBeginingBlock(YES);
+    }
+    
     _keyboardFrame.size.width = 0;
     _keyboardDuration = 0;
     [self updateHeaderViewWithComplete:nil];
@@ -540,7 +591,15 @@ const static CGFloat kNotInitValue = -888888.88;
          }*/
         [UIView animateWithDuration:_moveViewAnimationDuration animations:^{
             moveView.frame = moveViewFrame;
+            [moveView.superview layoutIfNeeded];
         }];
+        
+        //TODO:动画完成block
+        WHC_KBMConfiguration *config =  [_KeyboardConfigurations objectForKey:@(_currentMonitorViewController.hash)];
+        if (config.keyboardAnimationCompletionBlock) {
+            config.keyboardAnimationCompletionBlock();
+        }
+        
     }
 }
 
@@ -571,8 +630,8 @@ const static CGFloat kNotInitValue = -888888.88;
     [self setCurrentMonitorViewController];
     if (_currentMonitorViewController) {
         _currentField = notify.object;
-        [self scanFrontNextField];
-        [self sendFieldViewNotify];
+//        [self scanFrontNextField];
+//        [self sendFieldViewNotify];
 //        [self handleKeyboardDidShowToAdjust];
     }
 }
