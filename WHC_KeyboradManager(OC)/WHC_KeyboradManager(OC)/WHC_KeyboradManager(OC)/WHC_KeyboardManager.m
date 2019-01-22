@@ -631,9 +631,9 @@ const static CGFloat kNotInitValue = -888888.88;
     [self setCurrentMonitorViewController];
     if (_currentMonitorViewController) {
         _currentField = notify.object;
-//        [self scanFrontNextField];
-//        [self sendFieldViewNotify];
-//        [self handleKeyboardDidShowToAdjust];
+        [self scanFrontNextField];
+        [self sendFieldViewNotify];
+        [self handleKeyboardDidShowToAdjust];
     }
 }
 

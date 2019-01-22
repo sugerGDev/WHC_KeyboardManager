@@ -160,15 +160,16 @@
 }
 
 - (void)clickDone:(UIButton *)button {
+    if (_clickDoneButtonBlock) {
+        _clickDoneButtonBlock();
+    }
+    
     if (_currentFieldView) {
         if ([_currentFieldView isKindOfClass:[UITextField class]]) {
             [((UITextField *)_currentFieldView) resignFirstResponder];
         }else if ([_currentFieldView isKindOfClass:[UITextView class]]) {
             [((UITextView *)_currentFieldView) resignFirstResponder];
         }
-    }
-    if (_clickDoneButtonBlock) {
-        _clickDoneButtonBlock();
     }
 }
 
