@@ -32,75 +32,90 @@
 @implementation WHC_KeyboardHeaderView
 
 - (instancetype)initWithFrame:(CGRect)frame {
-    self = [super initWithFrame:frame];
+    self = [super initWithFrame:CGRectMake(0, 0, UIScreen.mainScreen.bounds.size.width, 44.f)];
     if (self) {
-        self.backgroundColor = [UIColor whiteColor];
-        
-        _nextButton = [UIButton new];
-        _frontButton = [UIButton new];
-        _doneButton = [UIButton new];
-        _lineView = [UIView new];
-        
-        [self addSubview:_nextButton];
-        [self addSubview:_frontButton];
-        [self addSubview:_doneButton];
-        [self addSubview:_lineView];
-        
-        _nextButton.translatesAutoresizingMaskIntoConstraints = NO;
-        _frontButton.translatesAutoresizingMaskIntoConstraints = NO;
-        _doneButton.translatesAutoresizingMaskIntoConstraints = NO;
-        _lineView.translatesAutoresizingMaskIntoConstraints = NO;
-        
-        _lineView.backgroundColor = [UIColor colorWithWhite:0.8 alpha:1];
-        [_frontButton setTitle:@"←" forState: UIControlStateNormal];
-        [_nextButton setTitle:@"→" forState: UIControlStateNormal];
-        [_doneButton setTitle:@"完成" forState: UIControlStateNormal];
-
-        [_frontButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-        [_nextButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-        [_doneButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-        
-        [_frontButton setTitleColor:[UIColor grayColor] forState:UIControlStateSelected];
-        [_nextButton setTitleColor:[UIColor grayColor] forState:UIControlStateSelected];
-        
-        _frontButton.titleLabel.font = [UIFont boldSystemFontOfSize:20];
-        _nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:20];
-
-        [_frontButton addTarget:self action:@selector(clickFront:) forControlEvents:UIControlEventTouchUpInside];
-        [_nextButton addTarget:self action:@selector(clickNext:) forControlEvents:UIControlEventTouchUpInside];
-        [_doneButton addTarget:self action:@selector(clickDone:) forControlEvents:UIControlEventTouchUpInside];
-        
-        CGFloat kMargin = 0;
-        CGFloat kWidth = 60;
-        
-        [self addConstraint:[NSLayoutConstraint constraintWithItem:_frontButton attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeft multiplier:1 constant:kMargin]];
-        [_frontButton addConstraint:[NSLayoutConstraint constraintWithItem:_frontButton attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:kWidth]];
-        [self addConstraint:[NSLayoutConstraint constraintWithItem:_frontButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
-        [self addConstraint:[NSLayoutConstraint constraintWithItem:_frontButton attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
-        
-        [self addConstraint:[NSLayoutConstraint constraintWithItem:_nextButton attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:_frontButton attribute:NSLayoutAttributeRight multiplier:1 constant:kMargin]];
-        [_nextButton addConstraint:[NSLayoutConstraint constraintWithItem:_nextButton attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:kWidth]];
-        [self addConstraint:[NSLayoutConstraint constraintWithItem:_nextButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
-        [self addConstraint:[NSLayoutConstraint constraintWithItem:_nextButton attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
-
-        [self addConstraint:[NSLayoutConstraint constraintWithItem:_doneButton attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTrailing multiplier:1 constant:-kMargin]];
-        [_doneButton addConstraint:[NSLayoutConstraint constraintWithItem:_doneButton attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:kWidth]];
-        [self addConstraint:[NSLayoutConstraint constraintWithItem:_doneButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
-        [self addConstraint:[NSLayoutConstraint constraintWithItem:_doneButton attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
-
-        [self addConstraint:[NSLayoutConstraint constraintWithItem:_lineView attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeft multiplier:1 constant:0]];
-        [_lineView addConstraint:[NSLayoutConstraint constraintWithItem:_lineView attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:0.5]];
-        [self addConstraint:[NSLayoutConstraint constraintWithItem:_lineView attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeRight multiplier:1 constant:0]];
-        [self addConstraint:[NSLayoutConstraint constraintWithItem:_lineView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
-        
-        /// 监听WHC_KeyboardManager通知
-        NSNotificationCenter * nCenter = [NSNotificationCenter defaultCenter];
-        [nCenter addObserver:self selector:@selector(getCurrentFieldView:) name:(NSString *)WHC_KBM_CurrentFieldView object:nil];
-        [nCenter addObserver:self selector:@selector(getNextFieldView:) name:(NSString *)WHC_KBM_NextFieldView object:nil];
-        [nCenter addObserver:self selector:@selector(getFrontFieldView:) name:(NSString *)WHC_KBM_FrontFieldView object:nil];
+        [self onInit];
         
     }
     return self;
+}
+
+- (instancetype)init
+{
+    self = [super initWithFrame:CGRectMake(0, 0, UIScreen.mainScreen.bounds.size.width, 44.f)];
+    if (self) {
+        
+        [self onInit];
+    }
+    return self;
+}
+
+- (void)onInit {
+    
+    self.backgroundColor = [UIColor whiteColor];
+    
+    _nextButton = [[UIButton alloc]init];
+    _frontButton = [[UIButton alloc]init];
+    _doneButton = [[UIButton alloc]init];
+    _lineView = [[UIView alloc]init];
+    
+    [self addSubview:_nextButton];
+    [self addSubview:_frontButton];
+    [self addSubview:_doneButton];
+    [self addSubview:_lineView];
+    
+    _nextButton.translatesAutoresizingMaskIntoConstraints = NO;
+    _frontButton.translatesAutoresizingMaskIntoConstraints = NO;
+    _doneButton.translatesAutoresizingMaskIntoConstraints = NO;
+    _lineView.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    _lineView.backgroundColor = [UIColor colorWithWhite:0.8 alpha:1];
+    [_frontButton setTitle:@"←" forState: UIControlStateNormal];
+    [_nextButton setTitle:@"→" forState: UIControlStateNormal];
+    [_doneButton setTitle:@"完成" forState: UIControlStateNormal];
+    
+    [_frontButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [_nextButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [_doneButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    
+    [_frontButton setTitleColor:[UIColor grayColor] forState:UIControlStateSelected];
+    [_nextButton setTitleColor:[UIColor grayColor] forState:UIControlStateSelected];
+    
+    _frontButton.titleLabel.font = [UIFont boldSystemFontOfSize:20];
+    _nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:20];
+    
+    [_frontButton addTarget:self action:@selector(clickFront:) forControlEvents:UIControlEventTouchUpInside];
+    [_nextButton addTarget:self action:@selector(clickNext:) forControlEvents:UIControlEventTouchUpInside];
+    [_doneButton addTarget:self action:@selector(clickDone:) forControlEvents:UIControlEventTouchUpInside];
+    
+    CGFloat kMargin = 0;
+    CGFloat kWidth = 60;
+    
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_frontButton attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeft multiplier:1 constant:kMargin]];
+    [_frontButton addConstraint:[NSLayoutConstraint constraintWithItem:_frontButton attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:kWidth]];
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_frontButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_frontButton attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
+    
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_nextButton attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:_frontButton attribute:NSLayoutAttributeRight multiplier:1 constant:kMargin]];
+    [_nextButton addConstraint:[NSLayoutConstraint constraintWithItem:_nextButton attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:kWidth]];
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_nextButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_nextButton attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
+    
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_doneButton attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTrailing multiplier:1 constant:-kMargin]];
+    [_doneButton addConstraint:[NSLayoutConstraint constraintWithItem:_doneButton attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:kWidth]];
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_doneButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_doneButton attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
+    
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_lineView attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeft multiplier:1 constant:0]];
+    [_lineView addConstraint:[NSLayoutConstraint constraintWithItem:_lineView attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:0.5]];
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_lineView attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeRight multiplier:1 constant:0]];
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_lineView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
+    
+    /// 监听WHC_KeyboardManager通知
+    NSNotificationCenter * nCenter = [NSNotificationCenter defaultCenter];
+    [nCenter addObserver:self selector:@selector(getCurrentFieldView:) name:(NSString *)WHC_KBM_CurrentFieldView object:nil];
+    [nCenter addObserver:self selector:@selector(getNextFieldView:) name:(NSString *)WHC_KBM_NextFieldView object:nil];
+    [nCenter addObserver:self selector:@selector(getFrontFieldView:) name:(NSString *)WHC_KBM_FrontFieldView object:nil];
 }
 
 - (void)setHideNextAndFrontButton:(BOOL)hideNextAndFrontButton {

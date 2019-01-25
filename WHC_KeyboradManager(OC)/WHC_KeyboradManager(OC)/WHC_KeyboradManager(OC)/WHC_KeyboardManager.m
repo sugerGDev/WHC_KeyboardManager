@@ -67,7 +67,7 @@ const static NSString * WHCObserve = @"kWHCObserve";
 
 - (instancetype)init {
     self = [super init];
-    _headerView = WHC_KeyboardHeaderView.new;
+    _headerView = [[WHC_KeyboardHeaderView alloc]init];
     return self;
 }
 
@@ -75,7 +75,7 @@ const static NSString * WHCObserve = @"kWHCObserve";
     _enableHeader = enableHeader;
     if (_enableHeader) {
         if (_headerView == nil) {
-            _headerView = WHC_KeyboardHeaderView.new;
+            _headerView = [[WHC_KeyboardHeaderView alloc]init];
         }
     }else {
         _headerView = nil;
@@ -137,7 +137,7 @@ const static CGFloat kNotInitValue = -888888.88;
     static dispatch_once_t onceToken;
     static WHC_KeyboardManager * kbManager = nil;
     dispatch_once(&onceToken, ^{
-        kbManager = WHC_KeyboardManager.new;
+        kbManager = [[WHC_KeyboardManager alloc]init];
     });
     return kbManager;
 }
@@ -470,7 +470,7 @@ const static CGFloat kNotInitValue = -888888.88;
 
 #pragma mark - 公开Api -
 - (WHC_KBMConfiguration *)addMonitorViewController:(UIViewController *)vc {
-    WHC_KBMConfiguration * configuration = [WHC_KBMConfiguration new];
+    WHC_KBMConfiguration * configuration = [[WHC_KBMConfiguration alloc]init];
     _KeyboardConfigurations[@(vc.hash)] = configuration;
 //    if (![_monitorViewControllers containsObject:vc.description]) {
 //        [_monitorViewControllers addObject:vc.description];

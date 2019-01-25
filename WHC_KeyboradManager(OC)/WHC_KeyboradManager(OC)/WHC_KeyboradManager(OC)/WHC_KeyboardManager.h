@@ -105,4 +105,9 @@ extern const NSString * WHC_KBM_FrontFieldView;
  */
 - (void)removeKeyboardObserver;
 
+/**
+ 手动触发调整位置
+ */
+- (void)handleKeyboardDidShowToAdjust;
+
 @end
