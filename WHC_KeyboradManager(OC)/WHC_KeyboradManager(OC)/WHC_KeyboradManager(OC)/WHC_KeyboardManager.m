@@ -543,6 +543,12 @@ const static CGFloat kNotInitValue = -888888.88;
 
 - (void)keyboardWillHide:(NSNotification *)notify {
   
+    // 关闭当前disable first
+    if (self.diabledResignFirstResponder) {
+        [self autoRemoveHeader];
+        return;
+    }
+    
     //TODO :动画开始block
     WHC_KBMConfiguration *config =  [_KeyboardConfigurations objectForKey:@(_currentMonitorViewController.hash)];
     if (config.keyboardAnimationBeginingBlock) {
@@ -606,6 +612,11 @@ const static CGFloat kNotInitValue = -888888.88;
 
 #pragma mark - 滚动监听 -
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    if (self.diabledResignFirstResponder) {
+        [self autoRemoveHeader];
+        return;
+    }
+    
     if (_currentMonitorViewController == nil) return;
     if (keyPath && [keyPath isEqualToString:(NSString *)kWHC_KBM_ContentOffset] && _currentField) {
         UIScrollView * scrollView = object;

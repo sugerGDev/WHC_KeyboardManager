@@ -105,6 +105,12 @@ extern const NSString * WHC_KBM_FrontFieldView;
  */
 - (void)removeKeyboardObserver;
 
+
+/**
+ 是否关闭当前keyboard hide 通知事件处理
+ */
+@property(nonatomic, assign) BOOL diabledResignFirstResponder;
+
 /**
  手动触发调整位置
  */
