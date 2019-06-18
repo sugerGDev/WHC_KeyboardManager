@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "WHC_KeyboardManager-fork"
-  s.version      = "1.3.1"
+  s.version      = "1.3.2"
   s.summary      = "iOS平台轻量级的键盘管理器，使用简单功能强大，拒绝全局监控，无入侵性，键盘再也不会挡住输入控件"
 
   s.homepage     = "https://github.com/netyouli/WHC_KeyboardManager"
